@@ -9,11 +9,8 @@ declare module NodeJS {
 
 declare namespace Express {
   export interface Application {
-    service?: any
-    log?: any
-  }
-
-  export interface Request {
-    userId?: string
+    service?: any;
+    log?: any;
+    use: any;
   }
 }
