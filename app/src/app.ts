@@ -4,17 +4,15 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
-
 import logger from 'node-logger-bunyan';
-
 import errorHandler from './middlewares/catch-and-log-errors';
+import reqResLogger from './middlewares/req-res-logger';
 
 /*
  * If production env, then load the config file with the values from the environment variables provided to the container.
  * Otherwise just load the local config file for the current environment.
  */
 let config = require(`../config/${process.env.NODE_ENV.toLowerCase()}.json`);
-
 if (process.env.NODE_ENV === 'production') {
   let configStringified: string = JSON.stringify(config);
 
@@ -28,6 +26,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const connections = require('./util/connections');
 const indexRouter = require('./routes/index');
+const reservationsRouter = require('./routes/reservations');
 
 const app = express();
 const port = process.env.PORT || '3000';
@@ -45,9 +44,14 @@ app
   .use(cors())
   .use(bodyParser.urlencoded({ extended: true }))
   /*
+   * Request-Response Logger
+   */
+  .use(reqResLogger)
+  /*
    * Routes
    */
   .use('/', indexRouter)
+  .use('/reservations', reservationsRouter)
   /*
    * Error handler
    */

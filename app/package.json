@@ -25,7 +25,8 @@
     "cors": "^2.8.4",
     "express": "^4.17.1",
     "http-errors": "~1.7.1",
-    "node-logger-bunyan": "git+https://github.com/gvko/node-logger-bunyan.git"
+    "node-logger-bunyan": "git+https://github.com/gvko/node-logger-bunyan.git",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/express": "^4.16.1",
