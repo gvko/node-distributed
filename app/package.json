@@ -13,7 +13,7 @@
     "start": "gulp && docker-compose up service",
     "init-env": "npm run start-redis && echo 'Waiting 3 sec for the DB containers to lift...' && sleep 3 && npm run init-db",
     "init-env-clean": "npm run stop-redis-clean && npm run init-env",
-    "init-db": "../scripts/init-dev-db.sh",
+    "init-db": "../scripts/init-dev-db.sh"
   },
   "repository": {
     "type": "git",
