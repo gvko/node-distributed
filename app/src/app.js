@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+"use strict";
+/* istanbul ignore file */
+Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const node_logger_bunyan_1 = require("node-logger-bunyan");
+const catch_and_log_errors_1 = require("./middlewares/catch-and-log-errors");
+/*
+ * If production env, then load the config file with the values from the environment variables provided to the container.
+ * Otherwise just load the local config file for the current environment.
+ */
+let config = require(`../config/${process.env.NODE_ENV.toLowerCase()}.json`);
+if (process.env.NODE_ENV === 'production') {
+    let configStringified = JSON.stringify(config);
+    Object.keys(process.env).forEach(key => {
+        configStringified = configStringified.replace(key, process.env[key]);
+    });
+    config = JSON.parse(configStringified);
+    console.log(config);
+}
+const connections = require('./util/connections');
+const indexRouter = require('./routes/index');
+const app = express();
+const port = process.env.PORT || '3000';
+const serviceName = process.env.SERVICE_NAME || process.env.HOSTNAME;
+/*
+ * Initialize the logger before anything else, so we can use it in middleware, etc.
+ */
+const logInTestEnv = process.env.LOG_TEST_ENV && process.env.LOG_TEST_ENV === 'true';
+app['log'] = node_logger_bunyan_1.default(serviceName, { logInTestEnv });
+app
+    .use(bodyParser.json())
+    .options('*', cors())
+    .use(cors())
+    .use(bodyParser.urlencoded({ extended: true }))
+    /*
+     * Routes
+     */
+    .use('/', indexRouter)
+    /*
+     * Error handler
+     */
+    .use(catch_and_log_errors_1.default);
+/*
+ * Set some of the initialized config and connections as properties of the app object, so that they are
+ * accessible anywhere across the app
+ */
+app['config'] = config;
+app['redis'] = connections.initRedis(config);
+app['service'] = {};
+/*
+ * Start the service
+ */
+app.listen(port, () => {
+    app.log.info(`Server started on port ${port} (container exposed: ${process.env.EXPOSED_PORT})`);
+});
+exports.default = app;
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImFwcC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUNBLDBCQUEwQjs7QUFFMUIsbUNBQW1DO0FBQ25DLDBDQUEwQztBQUMxQyw2QkFBNkI7QUFFN0IsMkRBQXdDO0FBRXhDLDZFQUE4RDtBQUU5RDs7O0dBR0c7QUFDSCxJQUFJLE1BQU0sR0FBRyxPQUFPLENBQUMsYUFBYSxPQUFPLENBQUMsR0FBRyxDQUFDLFFBQVEsQ0FBQyxXQUFXLEVBQUUsT0FBTyxDQUFDLENBQUM7QUFFN0UsSUFBSSxPQUFPLENBQUMsR0FBRyxDQUFDLFFBQVEsS0FBSyxZQUFZLEVBQUU7SUFDekMsSUFBSSxpQkFBaUIsR0FBVyxJQUFJLENBQUMsU0FBUyxDQUFDLE1BQU0sQ0FBQyxDQUFDO0lBRXZELE1BQU0sQ0FBQyxJQUFJLENBQUMsT0FBTyxDQUFDLEdBQUcsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxHQUFHLENBQUMsRUFBRTtRQUNyQyxpQkFBaUIsR0FBRyxpQkFBaUIsQ0FBQyxPQUFPLENBQUMsR0FBRyxFQUFFLE9BQU8sQ0FBQyxHQUFHLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQztJQUN2RSxDQUFDLENBQUMsQ0FBQztJQUVILE1BQU0sR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLGlCQUFpQixDQUFDLENBQUM7SUFDdkMsT0FBTyxDQUFDLEdBQUcsQ0FBQyxNQUFNLENBQUMsQ0FBQztDQUNyQjtBQUVELE1BQU0sV0FBVyxHQUFHLE9BQU8sQ0FBQyxvQkFBb0IsQ0FBQyxDQUFDO0FBQ2xELE1BQU0sV0FBVyxHQUFHLE9BQU8sQ0FBQyxnQkFBZ0IsQ0FBQyxDQUFDO0FBRTlDLE1BQU0sR0FBRyxHQUFHLE9BQU8sRUFBRSxDQUFDO0FBQ3RCLE1BQU0sSUFBSSxHQUFHLE9BQU8sQ0FBQyxHQUFHLENBQUMsSUFBSSxJQUFJLE1BQU0sQ0FBQztBQUN4QyxNQUFNLFdBQVcsR0FBVyxPQUFPLENBQUMsR0FBRyxDQUFDLFlBQVksSUFBSSxPQUFPLENBQUMsR0FBRyxDQUFDLFFBQVEsQ0FBQztBQUU3RTs7R0FFRztBQUNILE1BQU0sWUFBWSxHQUFZLE9BQU8sQ0FBQyxHQUFHLENBQUMsWUFBWSxJQUFJLE9BQU8sQ0FBQyxHQUFHLENBQUMsWUFBWSxLQUFLLE1BQU0sQ0FBQztBQUM5RixHQUFHLENBQUMsS0FBSyxDQUFDLEdBQUcsNEJBQU0sQ0FBQyxXQUFXLEVBQUUsRUFBRSxZQUFZLEVBQUUsQ0FBQyxDQUFDO0FBRW5ELEdBQUc7S0FDQSxHQUFHLENBQUMsVUFBVSxDQUFDLElBQUksRUFBRSxDQUFDO0tBQ3RCLE9BQU8sQ0FBQyxHQUFHLEVBQUUsSUFBSSxFQUFFLENBQUM7S0FDcEIsR0FBRyxDQUFDLElBQUksRUFBRSxDQUFDO0tBQ1gsR0FBRyxDQUFDLFVBQVUsQ0FBQyxVQUFVLENBQUMsRUFBRSxRQUFRLEVBQUUsSUFBSSxFQUFFLENBQUMsQ0FBQztJQUMvQzs7T0FFRztLQUNGLEdBQUcsQ0FBQyxHQUFHLEVBQUUsV0FBVyxDQUFDO0lBQ3RCOztPQUVHO0tBQ0YsR0FBRyxDQUFDLDhCQUFZLENBQUMsQ0FBQztBQUVyQjs7O0dBR0c7QUFDSCxHQUFHLENBQUMsUUFBUSxDQUFDLEdBQUcsTUFBTSxDQUFDO0FBQ3ZCLEdBQUcsQ0FBQyxPQUFPLENBQUMsR0FBRyxXQUFXLENBQUMsU0FBUyxDQUFDLE1BQU0sQ0FBQyxDQUFDO0FBQzdDLEdBQUcsQ0FBQyxTQUFTLENBQUMsR0FBRyxFQUFFLENBQUM7QUFFcEI7O0dBRUc7QUFDSCxHQUFHLENBQUMsTUFBTSxDQUFDLElBQUksRUFBRSxHQUFHLEVBQUU7SUFDcEIsR0FBRyxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsMEJBQTBCLElBQUksd0JBQXdCLE9BQU8sQ0FBQyxHQUFHLENBQUMsWUFBWSxHQUFHLENBQUMsQ0FBQztBQUNsRyxDQUFDLENBQUMsQ0FBQztBQUVILGtCQUFlLEdBQUcsQ0FBQyIsImZpbGUiOiJhcHAuanMiLCJzb3VyY2VzQ29udGVudCI6WyIjIS91c3IvYmluL2VudiBub2RlXG4vKiBpc3RhbmJ1bCBpZ25vcmUgZmlsZSAqL1xuXG5pbXBvcnQgKiBhcyBleHByZXNzIGZyb20gJ2V4cHJlc3MnO1xuaW1wb3J0ICogYXMgYm9keVBhcnNlciBmcm9tICdib2R5LXBhcnNlcic7XG5pbXBvcnQgKiBhcyBjb3JzIGZyb20gJ2NvcnMnO1xuXG5pbXBvcnQgbG9nZ2VyIGZyb20gJ25vZGUtbG9nZ2VyLWJ1bnlhbic7XG5cbmltcG9ydCBlcnJvckhhbmRsZXIgZnJvbSAnLi9taWRkbGV3YXJlcy9jYXRjaC1hbmQtbG9nLWVycm9ycyc7XG5cbi8qXG4gKiBJZiBwcm9kdWN0aW9uIGVudiwgdGhlbiBsb2FkIHRoZSBjb25maWcgZmlsZSB3aXRoIHRoZSB2YWx1ZXMgZnJvbSB0aGUgZW52aXJvbm1lbnQgdmFyaWFibGVzIHByb3ZpZGVkIHRvIHRoZSBjb250YWluZXIuXG4gKiBPdGhlcndpc2UganVzdCBsb2FkIHRoZSBsb2NhbCBjb25maWcgZmlsZSBmb3IgdGhlIGN1cnJlbnQgZW52aXJvbm1lbnQuXG4gKi9cbmxldCBjb25maWcgPSByZXF1aXJlKGAuLi9jb25maWcvJHtwcm9jZXNzLmVudi5OT0RFX0VOVi50b0xvd2VyQ2FzZSgpfS5qc29uYCk7XG5cbmlmIChwcm9jZXNzLmVudi5OT0RFX0VOViA9PT0gJ3Byb2R1Y3Rpb24nKSB7XG4gIGxldCBjb25maWdTdHJpbmdpZmllZDogc3RyaW5nID0gSlNPTi5zdHJpbmdpZnkoY29uZmlnKTtcblxuICBPYmplY3Qua2V5cyhwcm9jZXNzLmVudikuZm9yRWFjaChrZXkgPT4ge1xuICAgIGNvbmZpZ1N0cmluZ2lmaWVkID0gY29uZmlnU3RyaW5naWZpZWQucmVwbGFjZShrZXksIHByb2Nlc3MuZW52W2tleV0pO1xuICB9KTtcblxuICBjb25maWcgPSBKU09OLnBhcnNlKGNvbmZpZ1N0cmluZ2lmaWVkKTtcbiAgY29uc29sZS5sb2coY29uZmlnKTtcbn1cblxuY29uc3QgY29ubmVjdGlvbnMgPSByZXF1aXJlKCcuL3V0aWwvY29ubmVjdGlvbnMnKTtcbmNvbnN0IGluZGV4Um91dGVyID0gcmVxdWlyZSgnLi9yb3V0ZXMvaW5kZXgnKTtcblxuY29uc3QgYXBwID0gZXhwcmVzcygpO1xuY29uc3QgcG9ydCA9IHByb2Nlc3MuZW52LlBPUlQgfHwgJzMwMDAnO1xuY29uc3Qgc2VydmljZU5hbWU6IHN0cmluZyA9IHByb2Nlc3MuZW52LlNFUlZJQ0VfTkFNRSB8fCBwcm9jZXNzLmVudi5IT1NUTkFNRTtcblxuLypcbiAqIEluaXRpYWxpemUgdGhlIGxvZ2dlciBiZWZvcmUgYW55dGhpbmcgZWxzZSwgc28gd2UgY2FuIHVzZSBpdCBpbiBtaWRkbGV3YXJlLCBldGMuXG4gKi9cbmNvbnN0IGxvZ0luVGVzdEVudjogYm9vbGVhbiA9IHByb2Nlc3MuZW52LkxPR19URVNUX0VOViAmJiBwcm9jZXNzLmVudi5MT0dfVEVTVF9FTlYgPT09ICd0cnVlJztcbmFwcFsnbG9nJ10gPSBsb2dnZXIoc2VydmljZU5hbWUsIHsgbG9nSW5UZXN0RW52IH0pO1xuXG5hcHBcbiAgLnVzZShib2R5UGFyc2VyLmpzb24oKSlcbiAgLm9wdGlvbnMoJyonLCBjb3JzKCkpXG4gIC51c2UoY29ycygpKVxuICAudXNlKGJvZHlQYXJzZXIudXJsZW5jb2RlZCh7IGV4dGVuZGVkOiB0cnVlIH0pKVxuICAvKlxuICAgKiBSb3V0ZXNcbiAgICovXG4gIC51c2UoJy8nLCBpbmRleFJvdXRlcilcbiAgLypcbiAgICogRXJyb3IgaGFuZGxlclxuICAgKi9cbiAgLnVzZShlcnJvckhhbmRsZXIpO1xuXG4vKlxuICogU2V0IHNvbWUgb2YgdGhlIGluaXRpYWxpemVkIGNvbmZpZyBhbmQgY29ubmVjdGlvbnMgYXMgcHJvcGVydGllcyBvZiB0aGUgYXBwIG9iamVjdCwgc28gdGhhdCB0aGV5IGFyZVxuICogYWNjZXNzaWJsZSBhbnl3aGVyZSBhY3Jvc3MgdGhlIGFwcFxuICovXG5hcHBbJ2NvbmZpZyddID0gY29uZmlnO1xuYXBwWydyZWRpcyddID0gY29ubmVjdGlvbnMuaW5pdFJlZGlzKGNvbmZpZyk7XG5hcHBbJ3NlcnZpY2UnXSA9IHt9O1xuXG4vKlxuICogU3RhcnQgdGhlIHNlcnZpY2VcbiAqL1xuYXBwLmxpc3Rlbihwb3J0LCAoKSA9PiB7XG4gIGFwcC5sb2cuaW5mbyhgU2VydmVyIHN0YXJ0ZWQgb24gcG9ydCAke3BvcnR9IChjb250YWluZXIgZXhwb3NlZDogJHtwcm9jZXNzLmVudi5FWFBPU0VEX1BPUlR9KWApO1xufSk7XG5cbmV4cG9ydCBkZWZhdWx0IGFwcDtcbiJdfQ==

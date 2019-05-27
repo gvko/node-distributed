@@ -1,0 +1,52 @@
+{
+  "name": "node-distributed",
+  "version": "0.0.1",
+  "description": "A repo with some test projects, used to harden some concepts about distributed systems",
+  "main": "index.js",
+  "scripts": {
+    "make": "gulp",
+    "lint": "gulp tslint",
+    "compile": "gulp tsc",
+    "test": "npm run test-unit",
+    "test-unit": "NODE_ENV=test nyc --reporter=text --reporter=text-summary mochas",
+    "gulp-start": "gulp start",
+    "start": "gulp && docker-compose up service",
+    "init-env": "npm run start-redis && echo 'Waiting 3 sec for the DB containers to lift...' && sleep 3 && npm run init-db",
+    "init-env-clean": "npm run stop-redis-clean && npm run init-env",
+    "init-db": "../scripts/init-dev-db.sh",
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gvko/node-distributed.git"
+  },
+  "dependencies": {
+    "async-redis": "^1.1.4",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.17.1",
+    "http-errors": "~1.7.1",
+    "node-logger-bunyan": "git+https://github.com/gvko/node-logger-bunyan.git"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/node": "^12.0.2",
+    "commons-node": "git+https://github.com/gvko/common-ts-config.git",
+    "chai": "^4.2.0",
+    "gulp": "^4.0.2",
+    "gulp-nodemon": "^2.4.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-tslint": "^8.1.4",
+    "gulp-typescript": "^5.0.1",
+    "mocha": "^6.1.4",
+    "nodemon": "^1.19.1",
+    "nyc": "^14.1.1",
+    "sinon": "^7.3.2",
+    "istanbul": "^0.4.5"
+  },
+  "author": "Galin Kostov <gvko@pm.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gvko/node-distributed/issues"
+  },
+  "homepage": "https://github.com/gvko/node-distributed#readme"
+}
