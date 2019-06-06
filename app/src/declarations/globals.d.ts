@@ -9,6 +9,7 @@ declare module NodeJS {
 
 declare namespace Express {
   export interface Application {
+    redis?: any;
     service?: any;
     log?: any;
     use: any;

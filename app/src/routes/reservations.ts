@@ -5,19 +5,29 @@ const router = express.Router();
 /**
  * Get all reservations
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
+  const result = await req.app.redis.hgetall('reservations:asdf');
 
+  res.json(result);
 });
 
 /**
  * Get a particular reservation by ID
  */
-router.get('/:reservationId', (req, res) => {
+router.get('/:reservationId', async (req, res) => {
 
 });
 
-router.post('/', (req, res) => {
+/**
+ * Reserve a seat
+ */
+router.post('/', async (req, res) => {
+  const eventName: string = req.body.eventName;
+  const seatsCount: number = req.body.seatsCount;
 
+  const result = await req.app.redis.hincrby(`events:${eventName}`, 'available', -seatsCount);
+
+  res.json(result);
 });
 
 module.exports = router;
