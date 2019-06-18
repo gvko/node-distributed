@@ -25,6 +25,8 @@ router.post('/', async (req, res) => {
   const eventName: string = req.body.eventName;
   const seatsCount: number = req.body.seatsCount;
 
+  
+
   const result = await req.app.redis.hincrby(`events:${eventName}`, 'available', -seatsCount);
 
   res.json(result);
