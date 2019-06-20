@@ -6,7 +6,17 @@ const router = express.Router();
  * Get all reservations
  */
 router.get('/', async (req, res) => {
-  const result = await req.app.redis.hgetall('reservations:asdf');
+  const eventName: string = `events:${req.query.eventName}`;
+
+  let result;
+  try {
+    result = await req.app.redis.hgetall(eventName);
+  } catch (err) {
+    req.app.log.error(err);
+
+    res.status(500);
+    return res.json(err);
+  }
 
   res.json(result);
 });
@@ -22,12 +32,22 @@ router.get('/:reservationId', async (req, res) => {
  * Reserve a seat
  */
 router.post('/', async (req, res) => {
-  const eventName: string = req.body.eventName;
+  const eventName: string = `events:${req.body.eventName}`;
   const seatsCount: number = req.body.seatsCount;
 
-  
+  await req.app.redis.watch(eventName);
 
-  const result = await req.app.redis.hincrby(`events:${eventName}`, 'available', -seatsCount);
+  let result;
+  try {
+    result = await req.app.redis.multi()
+      .hincrby(eventName, 'available', -seatsCount)
+      .exec();
+  } catch (err) {
+    req.app.log.error(err);
+
+    res.status(500);
+    return res.json(err);
+  }
 
   res.json(result);
 });
