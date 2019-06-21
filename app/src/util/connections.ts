@@ -1,6 +1,8 @@
 /* istanbul ignore file */
 
-const redis = require('async-redis');
+// const redis = require('async-redis');
+const redis = require('redis');
+const bluebird = require('bluebird');
 
 /**
  * Initialize the Redis connection
@@ -8,6 +10,9 @@ const redis = require('async-redis');
  * @param {object}  config  Object containing the Redis connection details
  */
 export function initRedis(config) {
+  bluebird.promisifyAll(redis.RedisClient.prototype);
+  bluebird.promisifyAll(redis.Multi.prototype);
+
   const redisClient = redis.createClient(config.redis, {
     retry_strategy: (options) => {
       if (options.error) {

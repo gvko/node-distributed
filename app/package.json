@@ -20,12 +20,13 @@
     "url": "git+https://github.com/gvko/node-distributed.git"
   },
   "dependencies": {
-    "async-redis": "^1.1.4",
+    "bluebird": "^3.5.5",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "express": "^4.17.1",
     "http-errors": "~1.7.1",
     "node-logger-bunyan": "git+https://github.com/gvko/node-logger-bunyan.git",
+    "redis": "^2.8.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

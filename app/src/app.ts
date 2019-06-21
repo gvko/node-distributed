@@ -36,7 +36,7 @@ const serviceName: string = process.env.SERVICE_NAME || process.env.HOSTNAME;
  * Initialize the logger before anything else, so we can use it in middleware, etc.
  */
 const logInTestEnv: boolean = process.env.LOG_TEST_ENV && process.env.LOG_TEST_ENV === 'true';
-app['log'] = logger(serviceName, { logInTestEnv });
+global.log = logger(serviceName, { logInTestEnv });
 
 app
   .use(bodyParser.json())
@@ -62,14 +62,14 @@ app
  * accessible anywhere across the app
  */
 app['config'] = config;
-app['redis'] = connections.initRedis(config);
+global.redis = connections.initRedis(config);
 app['service'] = {};
 
 /*
  * Start the service
  */
 app.listen(port, () => {
-  app.log.info(`Server started on port ${port} (container exposed: ${process.env.EXPOSED_PORT})`);
+  log.info(`Server started on port ${port} (container exposed: ${process.env.EXPOSED_PORT})`);
 });
 
 export default app;

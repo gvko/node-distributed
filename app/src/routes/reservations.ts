@@ -1,6 +1,7 @@
 import * as express from 'express';
 
 const router = express.Router();
+import * as ReservationsService from '../services/reservations-service';
 
 /**
  * Get all reservations
@@ -10,9 +11,9 @@ router.get('/', async (req, res) => {
 
   let result;
   try {
-    result = await req.app.redis.hgetall(eventName);
+    result = await redis.hgetallAsync(eventName);
   } catch (err) {
-    req.app.log.error(err);
+    log.error(err);
 
     res.status(500);
     return res.json(err);
@@ -35,29 +36,9 @@ router.post('/', async (req, res) => {
   const eventName: string = `events:${req.body.eventName}`;
   const seatsCount: number = req.body.seatsCount;
 
-  await req.app.redis.watch(eventName);
-
-  let result;
-
-  if (req.body.timeout) {
-    setTimeout(async () => {
-      result = await makeReservation(req.app.redis, eventName, seatsCount);
-    }, 10000);
-  } else {
-    result = await makeReservation(req.app.redis, eventName, seatsCount);
-  }
-
+  const result: string | null = await ReservationsService.makeReservation(eventName, seatsCount);
   res.json(result);
 });
 
-async function makeReservation(redis, eventName: string, seatsCount: number) {
-  try {
-    return await redis.multi()
-      .hincrby(eventName, 'available', -seatsCount)
-      .exec();
-  } catch (err) {
-    throw err;
-  }
-}
 
 module.exports = router;

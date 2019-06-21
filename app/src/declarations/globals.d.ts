@@ -1,9 +1,12 @@
 declare let log: any;
+declare let redis: any;
+declare let app: any;
 
 declare module NodeJS {
   interface Global {
     log: any;
     app: any;
+    redis: any;
   }
 }
 
