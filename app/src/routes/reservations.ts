@@ -6,38 +6,39 @@ import * as ReservationsService from '../services/reservations-service';
 /**
  * Get all reservations
  */
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   const eventName: string = `events:${req.query.eventName}`;
 
-  let result;
   try {
-    result = await redis.hgetallAsync(eventName);
+    const result = await ReservationsService.getEventDetails(eventName);
+    res.json(result);
   } catch (err) {
-    log.error(err);
-
     res.status(500);
-    return res.json(err);
+    return next(err);
   }
-
-  res.json(result);
 });
 
 /**
  * Get a particular reservation by ID
  */
-router.get('/:reservationId', async (req, res) => {
+router.get('/:reservationId', async (req, res, next) => {
 
 });
 
 /**
  * Reserve a seat
  */
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   const eventName: string = `events:${req.body.eventName}`;
   const seatsCount: number = req.body.seatsCount;
 
-  const result: string | null = await ReservationsService.makeReservation(eventName, seatsCount);
-  res.json(result);
+  try {
+    const result: string | null = await ReservationsService.makeReservation(eventName, seatsCount);
+    res.json(result);
+  } catch (err) {
+    res.status(500);
+    return next(err);
+  }
 });
 
 

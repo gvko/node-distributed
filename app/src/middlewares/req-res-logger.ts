@@ -15,7 +15,7 @@ export default function (req, res, next) {
 
   const headersToLog: any = Object.assign({}, req.headers);
 
-  req.app.log.info({
+  log.info({
     subModule: 'req-res-logger',
     method,
     url,
@@ -25,7 +25,7 @@ export default function (req, res, next) {
   }, 'Incoming request');
 
   res.on('finish', () => {
-    res.app.log.info({
+    log.info({
       subModule: 'req-res-logger',
       method,
       url,

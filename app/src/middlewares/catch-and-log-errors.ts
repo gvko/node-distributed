@@ -11,7 +11,7 @@
  * @param next
  */
 export default function (err, req, res, next) {
-  const statusCode: number = err.data.statusCode ? err.data.statusCode : 500;
+  const statusCode: number = err.data && err.data.statusCode ? err.data.statusCode : 500;
 
   const error = {
     message: err.message,
@@ -25,7 +25,7 @@ export default function (err, req, res, next) {
    */
   const stack = err.stack !== undefined ? err.stack.toString().split('\n') : undefined;
 
-  req.app.log.error({ error, stack }, err.message);
+  log.error({ error, stack }, err.message);
 
   res.status(statusCode);
   res.json(error);
