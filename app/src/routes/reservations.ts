@@ -38,18 +38,26 @@ router.post('/', async (req, res) => {
   await req.app.redis.watch(eventName);
 
   let result;
-  try {
-    result = await req.app.redis.multi()
-      .hincrby(eventName, 'available', -seatsCount)
-      .exec();
-  } catch (err) {
-    req.app.log.error(err);
 
-    res.status(500);
-    return res.json(err);
+  if (req.body.timeout) {
+    setTimeout(async () => {
+      result = await makeReservation(req.app.redis, eventName, seatsCount);
+    }, 10000);
+  } else {
+    result = await makeReservation(req.app.redis, eventName, seatsCount);
   }
 
   res.json(result);
 });
+
+async function makeReservation(redis, eventName: string, seatsCount: number) {
+  try {
+    return await redis.multi()
+      .hincrby(eventName, 'available', -seatsCount)
+      .exec();
+  } catch (err) {
+    throw err;
+  }
+}
 
 module.exports = router;
