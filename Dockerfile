@@ -1,5 +1,3 @@
-FROM node:12.0
-
+FROM node:12-slim as BASE
 WORKDIR /app
-
 ADD app /app

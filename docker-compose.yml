@@ -2,7 +2,7 @@ version: '3'
 
 services:
   redis:
-    image: redis:latest
+    image: redis:5.0.5-alpine
     ports:
       - 6010:6379
     container_name: redis-dist
