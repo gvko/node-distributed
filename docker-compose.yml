@@ -1,44 +1,47 @@
 version: '3'
 
 services:
+  traefik:
+    image: traefik
+    command: --api --docker --logLevel=DEBUG
+    ports:
+      - 6000:80     # The HTTP port
+      - 6060:8080   # The Web UI (enabled by --api)
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'   # So that Traefik can listen to the Docker events
+      - '/dev/null:/traefik.toml'
+    container_name: traefik-dist
+
   redis:
     image: redis:5.0.5-alpine
     ports:
       - 6010:6379
     container_name: redis-dist
+    healthcheck:
+      test: echo ping | nc localhost 6010
+      interval: 5s
 
-  service1:
+  api:
     build: .
-    ports:
-      - 6000:3000
-      - 16000:5858
+#    ports:
+#      - 6001:3000
+#      - 16001:5858
+    expose:
+      - 3000
+      - 5858
     tty: true
     volumes:
       - ./app:/app
     depends_on:
       - redis
     environment:
-      - SERVICE_NAME=node-service
+      - SERVICE_NAME=api-dist
       - LOG_TEST_ENV=false
       - NODE_ENV=development
-      - EXPOSED_PORT=6000
-    container_name: service-dist1
+      - EXPOSED_PORT=6001
+#    container_name: api-dist
     command: npm run gulp-start
-
-  service2:
-    build: .
-    ports:
-      - 6001:3000
-      - 16001:5858
-    tty: true
-    volumes:
-      - ./app:/app
-    depends_on:
-      - redis
-    environment:
-      - SERVICE_NAME=node-service
-      - LOG_TEST_ENV=false
-      - NODE_ENV=development
-      - EXPOSED_PORT=6000
-    container_name: service-dist2
-    command: npm run gulp-start
+    labels:
+      - traefik.enable=true
+      - traefik.backend=api-distributed
+      - 'traefik.frontend.rule=Host:localhost'

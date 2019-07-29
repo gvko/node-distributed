@@ -10,7 +10,8 @@
     "test": "npm run test-unit",
     "test-unit": "NODE_ENV=test nyc --reporter=text --reporter=text-summary mochas",
     "gulp-start": "gulp start",
-    "start": "gulp && docker-compose up ",
+    "start": "gulp && docker-compose up api",
+    "scale": "docker-compose scale api=3",
     "init-env": "npm run start-redis && echo 'Waiting 3 sec for the DB containers to lift...' && sleep 3 && npm run init-db",
     "init-env-clean": "npm run stop-redis-clean && npm run init-env",
     "init-db": "../scripts/init-dev-db.sh"
