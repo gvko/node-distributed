@@ -11,7 +11,7 @@
     "test-unit": "NODE_ENV=test nyc --reporter=text --reporter=text-summary mochas",
     "gulp-start": "gulp start",
     "start": "gulp && docker-compose up api",
-    "scale": "docker-compose up --scale api=3 api",
+    "scale": "gulp && docker-compose up --scale api=3 api",
     "start-traefik": "docker-compose up -d traefik",
     "init-env": "npm run start-redis && echo 'Waiting 3 sec for the DB containers to lift...' && sleep 3 && npm run init-db",
     "init-env-clean": "npm run stop-redis-clean && npm run init-env",

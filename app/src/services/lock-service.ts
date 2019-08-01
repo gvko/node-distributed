@@ -6,8 +6,6 @@ let cronTask;
 export async function startRecurringLocking(): Promise<void> {
   const cronJobPatternEvery30Sec: string = '*/30 * * * * *';
 
-  log.info('Starting recurring task...');
-
   cronTask = cron.schedule(cronJobPatternEvery30Sec, () => {
     execLockingMechanism();
   });
@@ -22,12 +20,13 @@ export function stopRecurringLocking(): void {
  */
 async function execLockingMechanism(): Promise<void> {
   let retryAttempts: number = 3;
-  let lockAcquired: boolean = false;
+  let lockAcquired: boolean = await lock();
 
-  do {
+  while (!lockAcquired && retryAttempts > 0) {
+    await sleep(50);
     lockAcquired = await lock();
     retryAttempts--;
-  } while (!lockAcquired && retryAttempts > 0);
+  }
 
   if (!lockAcquired) {
     log.warn('Lock NOT acquired!');
@@ -36,13 +35,19 @@ async function execLockingMechanism(): Promise<void> {
 
   log.info('I got the lock!');
 
+  /*
+   * Wait a certain time (ms) to remove the chance of the job finishing and releasing the lock before the other
+   * instances have finished trying to acquire the lock, in case the job takes too short time to execute.
+   */
+  await sleep(200);
   await unlock();
+
   return;
 }
 
 async function lock(): Promise<boolean> {
   try {
-    const res = await redis.setAsync('lock', process.env.SERVICE_NAME, 'EX', 30, 'NX');
+    const res = await redis.setAsync('lock', process.env.SERVICE_NAME, 'EX', 10, 'NX');
 
     return res === 'OK';
 
@@ -58,4 +63,15 @@ async function unlock(): Promise<boolean> {
   } catch (err) {
     throw createError('Could not release lock', { err })
   }
+}
+
+/**
+ * Sleep the process for the given amount of time
+ *
+ * @param {number}  ms
+ */
+function sleep(ms: number) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
 }

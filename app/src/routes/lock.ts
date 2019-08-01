@@ -8,7 +8,9 @@ import * as LockService from '../services/lock-service';
  */
 router.post('/start', async (req, res, next) => {
   try {
+    log.info('Starting recurring task...');
     const result = await LockService.startRecurringLocking();
+
     res.json(result);
   } catch (err) {
     res.status(500);
@@ -22,6 +24,7 @@ router.post('/start', async (req, res, next) => {
 router.post('/stop', async (req, res, next) => {
   try {
     LockService.stopRecurringLocking();
+
     res.json();
   } catch (err) {
     res.status(500);

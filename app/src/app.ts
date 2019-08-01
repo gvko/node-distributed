@@ -7,6 +7,7 @@ import * as cors from 'cors';
 import logger from 'node-logger-bunyan';
 import errorHandler from './middlewares/catch-and-log-errors';
 import reqResLogger from './middlewares/req-res-logger';
+import { startRecurringLocking } from './services/lock-service';
 
 /*
  * If production env, then load the config file with the values from the environment variables provided to the container.
@@ -71,6 +72,9 @@ global['redis'] = connections.initRedis(config);
  */
 app.listen(port, () => {
   log.info(`Server started on port ${port} (container exposed: ${process.env.EXPOSED_PORT})`);
+
+  log.info('Starting recurring task...');
+  startRecurringLocking();
 });
 
 export default app;
