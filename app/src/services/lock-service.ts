@@ -12,7 +12,9 @@ export async function startRecurringLocking(): Promise<void> {
 }
 
 export function stopRecurringLocking(): void {
-  cronTask.stop();
+  cronTask.destroy();
+
+  log.info('Recurring task destroyed!');
 }
 
 /**
