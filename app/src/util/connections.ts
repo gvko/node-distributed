@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 
-// const redis = require('async-redis');
 const redis = require('redis');
 const bluebird = require('bluebird');
 

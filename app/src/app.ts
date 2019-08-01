@@ -26,6 +26,7 @@ if (process.env.NODE_ENV === 'production') {
 
 const connections = require('./util/connections');
 const indexRouter = require('./routes/index');
+const lockRouter = require('./routes/lock');
 const reservationsRouter = require('./routes/reservations');
 
 const app = express();
@@ -36,7 +37,7 @@ const serviceName: string = process.env.SERVICE_NAME || process.env.HOSTNAME;
  * Initialize the logger before anything else, so we can use it in middleware, etc.
  */
 const logInTestEnv: boolean = process.env.LOG_TEST_ENV && process.env.LOG_TEST_ENV === 'true';
-global.log = logger(serviceName, { logInTestEnv });
+global['log'] = logger(serviceName, { logInTestEnv });
 
 app
   .use(bodyParser.json())
@@ -51,6 +52,7 @@ app
    * Routes
    */
   .use('/', indexRouter)
+  .use('/lock', lockRouter)
   .use('/reservations', reservationsRouter)
   /*
    * Error handler
@@ -62,8 +64,7 @@ app
  * accessible anywhere across the app
  */
 app['config'] = config;
-global.redis = connections.initRedis(config);
-app['service'] = {};
+global['redis'] = connections.initRedis(config);
 
 /*
  * Start the service

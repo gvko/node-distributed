@@ -11,7 +11,8 @@
     "test-unit": "NODE_ENV=test nyc --reporter=text --reporter=text-summary mochas",
     "gulp-start": "gulp start",
     "start": "gulp && docker-compose up api",
-    "scale": "docker-compose scale api=3",
+    "scale": "docker-compose up --scale api=3 api",
+    "start-traefik": "docker-compose up -d traefik",
     "init-env": "npm run start-redis && echo 'Waiting 3 sec for the DB containers to lift...' && sleep 3 && npm run init-db",
     "init-env-clean": "npm run stop-redis-clean && npm run init-env",
     "init-db": "../scripts/init-dev-db.sh"
@@ -26,6 +27,7 @@
     "cors": "^2.8.4",
     "express": "^4.17.1",
     "http-errors": "~1.7.1",
+    "node-cron": "^2.0.3",
     "node-logger-bunyan": "git+https://github.com/gvko/node-logger-bunyan.git",
     "redis": "^2.8.0",
     "uuid": "^3.3.2"
