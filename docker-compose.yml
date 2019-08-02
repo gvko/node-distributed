@@ -21,6 +21,8 @@ services:
       test: echo ping | nc localhost 6010
       interval: 5s
 
+# ----------------------------
+
   api:
     build: .
 #    ports:
@@ -38,8 +40,61 @@ services:
       - SERVICE_NAME=api-dist
       - LOG_TEST_ENV=false
       - NODE_ENV=development
+      - START_RECURRING_LOCK=${START_RECURRING_LOCK}
       - EXPOSED_PORT=6001
 #    container_name: api-dist
+    command: npm run gulp-start
+    labels:
+      - traefik.enable=true
+      - traefik.backend=api-distributed
+      - 'traefik.frontend.rule=Host:localhost'
+
+# ----------------------------
+
+  client1:
+    build: .
+    ports:
+      - 16001:5858
+      - 6001:3000
+    expose:
+      - 3000
+      - 5858
+    tty: true
+    volumes:
+      - ./app:/app
+    depends_on:
+      - redis
+    environment:
+      - SERVICE_NAME=client-dist-1
+      - LOG_TEST_ENV=false
+      - NODE_ENV=development
+      - EXPOSED_PORT=6001
+    container_name: client-dist-1
+    command: npm run gulp-start
+    labels:
+      - traefik.enable=true
+      - traefik.backend=api-distributed
+      - 'traefik.frontend.rule=Host:localhost'
+
+  client2:
+    build: .
+    ports:
+      - 16002:5858
+      - 6002:3000
+    expose:
+      - 3000
+      - 5858
+    tty: true
+    volumes:
+      - ./app:/app
+    depends_on:
+      - redis
+    environment:
+      - SERVICE_NAME=client-dist-2
+      - LOG_TEST_ENV=false
+      - NODE_ENV=development
+      - EXPOSED_PORT=6001
+    container_name: client-dist-2
     command: npm run gulp-start
     labels:
       - traefik.enable=true

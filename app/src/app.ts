@@ -73,8 +73,10 @@ global['redis'] = connections.initRedis(config);
 app.listen(port, () => {
   log.info(`Server started on port ${port} (container exposed: ${process.env.EXPOSED_PORT})`);
 
-  log.info('Starting recurring task...');
-  startRecurringLocking();
+  if (process.env.START_RECURRING_LOCK === 'true') {
+    log.info('Starting recurring task...');
+    startRecurringLocking();
+  }
 });
 
 export default app;
